@@ -30,7 +30,7 @@ To build and run locally,
 
 ```
 git clone https://github.com/nbarbettini/oidc-debugger
-cd oidc-debugger
+cd oidc-debugger/OidcDebugger
 dotnet build
 dotnet run
 ```
