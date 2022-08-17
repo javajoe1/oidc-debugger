@@ -1,13 +1,11 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.SpaServices.Webpack;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.HttpOverrides;
-using System.Net;
-using System.IO;
+using Microsoft.Extensions.Hosting;
 
 namespace OidcDebugger
 {
@@ -21,7 +19,7 @@ namespace OidcDebugger
 
         public IConfiguration Configuration { get; }
 
-        public ILogger<Startup> Logger {get;}
+        public ILogger<Startup> Logger { get; }
 
         public void ConfigureDevelopmentServices(IServiceCollection services)
         {
@@ -51,33 +49,35 @@ namespace OidcDebugger
             services.Configure<MultitenancyOptions>(Configuration.GetSection("Multitenancy"));
             services.AddMultitenancy<AppTenant, AppTenantResolver>();
 
-            services.AddMvc();
+            services.AddRazorPages();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILoggerFactory loggerFactory)
         {
             app.UseForwardedHeaders();
-            
+
             app.UseReferrerPolicy(opts => opts.NoReferrerWhenDowngrade());
 
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
 
-                app.UseWebpackDevMiddleware(new WebpackDevMiddlewareOptions
-                {
-                    HotModuleReplacement = true,
-                });
+                // JBF told to comment this out to avoid some webpack issue. see https://itecnote.com/tecnote/c-cannot-find-module-aspnet-webpack-when-using-dotnet-publish-in-net-core-2-0-angular/
+                //                app.UseWebpackDevMiddleware(new WebpackDevMiddlewareOptions
+                //                {
+                //                    HotModuleReplacement = true,
+                //                });
             }
             else
             {
                 app.UseHsts(options => options.MaxAge(days: 365).IncludeSubdomains());
 
                 app.UseExceptionHandler("/Home/Error");
-            }            
+            }
 
             app.UseStaticFiles();
+            app.UseRouting();
 
             app.UseXfo(options => options.SameOrigin());
             app.UseXXssProtection(options => options.EnabledWithBlockMode());
@@ -85,7 +85,9 @@ namespace OidcDebugger
 
             app.UseMultitenancy<AppTenant>();
 
-            app.UseMvc();
+            app.UseEndpoints(endpoints => {
+                endpoints.MapControllers();
+            });
         }
     }
 }

@@ -20,6 +20,7 @@ new Vue({
         responseMode: getHint('response_mode_hint')[0] || fromLocalStorage('odebugger:responseMode') || 'form_post',
         state: getHint('state_hint')[0] || utils.randomness(),
         nonce: utils.randomness(),
+        launch: getHint('launch')[0] || fromLocalStorage('odebugger:launch') || '',
         selected: '',
         pkceMethod: getHint('pkce_method_hint')[0] || fromLocalStorage('odebugger:pkceMethod') || 'S256',
         pkceCodeVerifier: utils.randomString(43),
@@ -55,6 +56,7 @@ new Vue({
             result.params.push({ name: 'scope', hintName: 'scope_hint', value: this.scopes.trim() });
             result.params.push({ name: 'response_type', hintName: 'response_type_hint', value: this.responseType.trim() });
             result.params.push({ name: 'response_mode', hintName: 'response_mode_hint', value: this.responseMode.trim() });
+            result.params.push({ name: 'launch', hintName: 'launch_hint', value: this.launch.trim() });
 
             if (this.responseTypesArray.indexOf('code') > -1 && this.usePkce) {
                 result.params.push({ name: 'code_challenge_method', value: this.pkceMethod.trim() });
@@ -109,6 +111,7 @@ new Vue({
             window.localStorage.setItem('odebugger:pkceMethod', this.pkceMethod);
             window.localStorage.setItem('odebugger:usePkce', this.usePkce);
             window.sessionStorage.setItem('odebugger:pkceCodeVerifier', this.pkceCodeVerifier);
+            window.sessionStorage.setItem('odebugger:launch', this.launch);
 
             utils.hash(this.pkceMethod, this.pkceCodeVerifier).then(hashed => {
                 window.sessionStorage.setItem('odebugger:pkceCodeChallenge', hashed);
